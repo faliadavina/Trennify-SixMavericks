@@ -9,7 +9,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Image Processing</title>
+    <title>TRENNIFY</title>
 
     <!-- Custom fonts for this template-->
     <link href="../static/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -42,7 +42,7 @@
             <hr class="sidebar-divider my-0">
 
             <!-- Nav Item - Dashboard -->
-            <li class="nav-item active">
+            <li class="nav-item">
                 <a class="nav-link collapsed" href="/">
                     <i class="fas fa-fw fa-home"></i>
                     <span>Dashboard</span>
@@ -53,10 +53,11 @@
             <hr class="sidebar-divider">
 
             <!-- Nav Item - Create Keywords -->
-            <li class="nav-item">
+            <li class="nav-item active">
                 <a class="nav-link" href="/create-keywords">
                     <i class="fas fa-fw fa-sort-alpha-down"></i>
                     <span>Create Keywords</span></a>
+                    <p>Total Data : {{ records_show }}</p>
             </li>
 
             <!-- Nav Item - Get Data -->

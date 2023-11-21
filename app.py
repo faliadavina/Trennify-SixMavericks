@@ -2,16 +2,80 @@ import numpy as np
 from PIL import Image
 import image_processing
 import os
-from flask import Flask, render_template, request, make_response
+from flask import Flask, render_template, request, make_response, redirect, url_for, flash
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from datetime import datetime
 from functools import wraps, update_wrapper
 from shutil import copyfile
 import cv2
 import random
+import pymongo
 
 app = Flask(__name__)
+app.secret_key = 'six_mavericks'
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
+
+# ================================================================
+
+# Membuat koneksi ke server MongoDB (default: localhost, port: 27017)
+client = pymongo.MongoClient("mongodb+srv://aininurulazizah:aininurulazizah@cluster0.cmotjqx.mongodb.net/?retryWrites=true&w=majority")
+
+# Memilih database
+db = client.get_database('tweets_db')
+
+# Mengambil koleksi
+records = db.data_tweets
+records_show = records.count_documents({})
+
+# =================================================================
+
+# Objek LoginManager
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+login_manager.login_message_category = 'info'
+
+# Model Pengguna
+class User(UserMixin):
+    def __init__(self, user_id, username, password):
+        self.id = user_id
+        self.username = username
+        self.password = password
+
+# Fungsi User Loader
+@login_manager.user_loader
+def load_user(user_id):
+    # Kode untuk memuat pengguna dari penyimpanan data (misalnya, database)
+    return User(user_id, "username", "hashed_password")
+
+# Rute Login
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        # Verifikasi kredensial (gunakan metode aman di produksi)
+        if username == 'aini' and password == 'aini':
+            # Buat objek pengguna dan login
+            user = User("user_id", username, "hashed_password")  # Ganti dengan logika pengaturan kunci yang sesuai
+            login_user(user)
+            flash('Login berhasil', 'success')
+            return redirect(url_for('index'))
+        else:
+            flash('Kombinasi username/password salah', 'danger')
+
+    return render_template('login.html')
+
+# Langkah 7: Template Login (templates/login.html)
+
+# Langkah 8: Proteksi Rute
+@app.route('/protected')
+@login_required
+def protected():
+    return 'Halaman ini hanya dapat diakses oleh pengguna yang sudah login.'
+
+# =================================================================
 
 
 def nocache(view):
@@ -30,7 +94,7 @@ def nocache(view):
 @app.route("/")
 @nocache
 def index():
-    return render_template("index.html", file_path="img/image_here.jpg")
+    return render_template("index.html", file_path="img/image_here.jpg", records_show=records_show)
 
 
 @app.route("/about")
