@@ -10,6 +10,10 @@ from shutil import copyfile
 import cv2
 import random
 import pymongo
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+import io
+from flask import Flask, render_template, Response
+import matplotlib.pyplot as plt
 
 app = Flask(__name__)
 app.secret_key = 'six_mavericks'
@@ -35,6 +39,9 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
 
+# =================================================================
+
+
 # Model Pengguna
 class User(UserMixin):
     def __init__(self, user_id, username, password):
@@ -56,12 +63,20 @@ def login():
         password = request.form['password']
 
         # Verifikasi kredensial (gunakan metode aman di produksi)
-        if username == 'aini' and password == 'aini':
+        if username == 'itsupport' and password == 'itsupport':
             # Buat objek pengguna dan login
             user = User("user_id", username, "hashed_password")  # Ganti dengan logika pengaturan kunci yang sesuai
             login_user(user)
             flash('Login berhasil', 'success')
-            return redirect(url_for('index'))
+            return redirect(url_for('it_page'))
+        elif username == 'manager' and password == 'manager':
+            # Arahkan ke halaman khusus untuk manajer
+            flash('Login berhasil sebagai Manager', 'success')
+            return redirect(url_for('general_page'))
+        elif username == 'digitalmarketing' and password == 'digitalmarketing':
+            # Arahkan ke halaman khusus untuk digital marketing
+            flash('Login berhasil sebagai Digital Marketing', 'success')
+            return redirect(url_for('general_page'))
         else:
             flash('Kombinasi username/password salah', 'danger')
 
@@ -77,6 +92,54 @@ def protected():
 
 # =================================================================
 
+@app.route("/count_data", methods=['GET', 'POST'])
+def count_data():
+    if request.method == 'POST':
+        target_month = int(request.form.get('target_month', 1))
+        target_year = int(request.form.get('target_year', 2022))  # Set default year as needed
+    else:
+        target_month = 1
+        target_year = 2022  # Set default year as needed
+
+    # Memanggil fungsi calculate_totals dengan parameter yang sesuai
+    result_totals = image_processing.calculate_totals(target_year, target_month)
+
+    # Mengurutkan hasil berdasarkan total_engagement
+    sorted_result = sorted(result_totals.items(), key=lambda x: x[1]['total_engagement'], reverse=False)
+    
+    # Membuat tren chart
+    tren_chart = bar_chart_png(sorted_result)
+    
+    # Mendapatkan data tweet
+    image_processing.get_posting(target_year, target_month)
+
+    # Melewatkan hasil yang sudah diurutkan, nilai target_month, dan nilai target_year ke template HTML
+    return render_template("count_data.html", result=dict(sorted_result), target_month=target_month, target_year=target_year, tren_chart=tren_chart)
+
+
+def bar_chart_png(sorted_result):
+    menu_labels = [item[0] for item in sorted_result]
+    engagement_sizes = [item[1]['total_engagement'] for item in sorted_result]
+    colors = ['lightgreen', 'lightskyblue', 'lightcoral']  # Sesuaikan dengan jumlah kategori
+
+    fig, ax = plt.subplots()
+    ax.barh(menu_labels, engagement_sizes, color=colors)
+    ax.set_xlabel('Nilai Engagement')
+
+    output = io.BytesIO()
+    FigureCanvas(fig).print_png(output)
+
+    # Simpan gambar ke file (dengan nama unik)
+    filename = f"tren_chart.png"
+    filepath = os.path.join("static", "img", filename)
+    with open(filepath, "wb") as file:
+        file.write(output.getvalue())
+
+    # Kembalikan path gambar
+    return filepath
+
+
+# =================================================================
 
 def nocache(view):
     @wraps(view)
@@ -96,6 +159,15 @@ def nocache(view):
 def index():
     return render_template("index.html", file_path="img/image_here.jpg", records_show=records_show)
 
+@app.route("/it-page")
+@nocache
+def it_page():
+    return render_template("it-page.html", file_path="img/image_here.jpg", records_show=records_show)
+
+@app.route("/general-page")
+@nocache
+def general_page():
+    return render_template("general-page.html", file_path="img/image_here.jpg", records_show=records_show)
 
 @app.route("/about")
 @nocache

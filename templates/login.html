@@ -27,17 +27,39 @@
     <!-- Page Wrapper -->
     <div id="wrapper">
 
-        <h2>Login</h2>
-        <form method="post" action="{{ url_for('login') }}">
-            <!-- Formulir login -->
-            <label for="username">Username:</label>
-            <input type="text" name="username" required>
-            <br>
-            <label for="password">Password:</label>
-            <input type="password" name="password" required>
-            <br>
-            <input type="submit" value="Login">
-        </form>
+        <div class="container-fluid">
+            <div class="row justify-content-center">
+    
+                <!-- Earnings (Monthly) Card Example -->
+                <div class="col-xl-4 col-md-6 mb-4 mt-4">
+                    <center><h3>LOGIN</h3></center>
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2"> 
+                                    <form id="uploadForm" action="{{ url_for('login') }}" method="POST" enctype="multipart/form-data">
+                                    
+                                        <!-- Form for Name and Month -->
+                                        <div class="form-group">
+                                            <label for="username"><div class="text-gray-800">Username</div></label>
+                                            <input type="text" class="form-control" id="name" name="username" required>
+                                        </div>
+    
+                                        <div class="form-group mt-4">
+                                            <label for="password"><div class="text-gray-800">Password</div></label>
+                                            <input type="password" class="form-control" id="password" name="password" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-success btn-block mt-5">Login</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    
+    
+            </div>
+            </div>
 
     </div>
     <!-- End of Page Wrapper -->
